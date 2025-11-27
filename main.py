@@ -5,7 +5,7 @@ app = FastAPI()
 
 @app.get("/")
 def read_root():
-    return {"message": "¡Hola desde Kubernetes con CI/CD automatizado!"}
+    return {"message": "¡Hola desde nuestra prueba de Kubernetes con CI/CD automatizado!"}
 
 @app.get("/status")
 def status():
