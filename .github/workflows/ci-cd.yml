@@ -42,7 +42,18 @@ jobs:
     - name: Configurar acceso al cluster
       run: |
         mkdir -p ~/.kube
-        echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+        echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+        chmod 600 ~/.kube/config
+
+    # -------------------------------
+    # 4.1 VERIFICAR CONEXIÓN (debug)
+    # -------------------------------
+    - name: Probar acceso al cluster
+      run: |
+        echo "Mostrando kubeconfig"
+        cat ~/.kube/config
+        echo "Probando conexión con kubectl get nodes..."
+        kubectl get nodes
 
     # -------------------------------
     # 5. ACTUALIZAR DEPLOYMENT EN K8S
