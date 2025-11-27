@@ -1,0 +1,53 @@
+name: CI/CD Kubernetes
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout del repo
+      uses: actions/checkout@v3
+
+    # -------------------------------
+    # 1. LOGIN DOCKER REGISTRY
+    # -------------------------------
+    - name: Login en Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    # -------------------------------
+    # 2. BUILD & PUSH
+    # -------------------------------
+    - name: Build de la imagen
+      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/demo-app:latest .
+
+    - name: Push de la imagen
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/demo-app:latest
+
+    # -------------------------------
+    # 3. INSTALAR kubectl
+    # -------------------------------
+    - name: Instalar kubectl
+      uses: azure/setup-kubectl@v3
+
+    # -------------------------------
+    # 4. CONFIGURAR KUBECONFIG
+    # -------------------------------
+    - name: Configurar acceso al cluster
+      run: |
+        mkdir -p ~/.kube
+        echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+
+    # -------------------------------
+    # 5. ACTUALIZAR DEPLOYMENT EN K8S
+    # -------------------------------
+    - name: Aplicar cambios en Kubernetes
+      run: |
+        kubectl set image deployment/demo-app demo-app=${{ secrets.DOCKERHUB_USERNAME }}/demo-app:latest
+        kubectl rollout status deployment/demo-app
